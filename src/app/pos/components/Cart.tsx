@@ -2,27 +2,42 @@
 
 import React from "react";
 
-export default function CartView({ cart, setCart, onCheckout }) {
-  function inc(i) {
-    const c = [...cart];
-    c[i].qty += 1;
-    setCart(c);
+type CartItem = {
+  product: {
+    id: number;
+    name: string;
+    default_selling_price: number;
+  };
+  qty: number;
+};
+
+type Props = {
+  cart: CartItem[];
+  setCart: React.Dispatch<React.SetStateAction<CartItem[]>>;
+  onCheckout: () => void;
+};
+
+export default function CartView({ cart, setCart, onCheckout }: Props) {
+  function inc(i: number) {
+    const newCart = [...cart];
+    newCart[i].qty += 1;
+    setCart(newCart);
   }
 
-  function dec(i) {
-    const c = [...cart];
-    c[i].qty = Math.max(1, c[i].qty - 1);
-    setCart(c);
+  function dec(i: number) {
+    const newCart = [...cart];
+    newCart[i].qty = Math.max(1, newCart[i].qty - 1);
+    setCart(newCart);
   }
 
-  function remove(i) {
-    const c = [...cart];
-    c.splice(i, 1);
-    setCart(c);
+  function remove(i: number) {
+    const newCart = [...cart];
+    newCart.splice(i, 1);
+    setCart(newCart);
   }
 
   const total = cart.reduce(
-    (s, c) => s + c.product.default_selling_price * c.qty,
+    (sum, item) => sum + item.product.default_selling_price * item.qty,
     0
   );
 
@@ -33,7 +48,7 @@ export default function CartView({ cart, setCart, onCheckout }) {
       {cart.length === 0 && <div>No items</div>}
 
       {cart.map((c, i) => (
-        <div key={i} className="flex justify-between items-center">
+        <div key={c.product.id} className="flex justify-between items-center">
           <div>
             <div>{c.product.name}</div>
             <div className="text-sm text-gray-600">
@@ -41,22 +56,34 @@ export default function CartView({ cart, setCart, onCheckout }) {
             </div>
           </div>
 
-          <div className="flex gap-2">
-            <button onClick={() => dec(i)} className="px-2 bg-gray-200 rounded">
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => dec(i)}
+              className="px-2 bg-gray-200 rounded"
+            >
               -
             </button>
+
             <span>{c.qty}</span>
-            <button onClick={() => inc(i)} className="px-2 bg-gray-200 rounded">
+
+            <button
+              onClick={() => inc(i)}
+              className="px-2 bg-gray-200 rounded"
+            >
               +
             </button>
-            <button onClick={() => remove(i)} className="text-red-600">
+
+            <button
+              onClick={() => remove(i)}
+              className="text-red-600 ml-2"
+            >
               Remove
             </button>
           </div>
         </div>
       ))}
 
-      <div className="font-semibold">Total: ₹{total}</div>
+      <div className="font-semibold">Total: ₹{total.toFixed(2)}</div>
 
       <button
         onClick={onCheckout}
