@@ -1,5 +1,6 @@
 import { supabase } from "./supabase";
-import { handleRpcResult, type RpcResult } from "@/lib/utils";
+import { handleRpcResult } from "@/lib/utils/index";
+
 
 // Type definitions for sale
 export type SaleItemPayload = {

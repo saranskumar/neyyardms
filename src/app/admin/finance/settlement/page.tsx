@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
-import { money } from "@/lib/utils";
+import { money } from "@/lib/utils/index";
 
 type TripSummary = {
   id: number;

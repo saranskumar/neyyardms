@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { makeSale } from "@/lib/rpc";
 import { queueTransaction } from "@/lib/offlineQueue";
-import { isOnline, toast } from "@/lib/utils";
+import { isOnline, toast } from "@/lib/utils/index";
 import CartView from "./components/Cart";
 
 

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
-import { toast } from "@/lib/utils";
+import { toast } from "@/lib/utils/index";
 
 type Product = {
   id: number;

@@ -3,8 +3,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { reportDamage as rpcReport } from "@/lib/rpc";
-import type { RpcResult } from "@/lib/utils";
-import { toast } from "@/lib/utils";
+import { toast } from "@/lib/utils/index";
 
 type Product = { id: number; name: string };
 
@@ -29,12 +28,14 @@ export default function DamageReportPage() {
 
     const loadProducts = async () => {
       const { data, error } = await supabase.from("products").select("id, name");
+
       if (error) {
-        console.error("Failed to load products:", error);
         toast("Failed to load products");
+        console.error(error);
         if (mounted) setProducts([]);
         return;
       }
+
       if (mounted) setProducts(data as Product[]);
     };
 
@@ -56,7 +57,7 @@ export default function DamageReportPage() {
       type
     };
 
-    const res: RpcResult<any> = await rpcReport(payload);
+    const res = await rpcReport(payload)
 
     if (!res.success) {
       console.error(res.message);
