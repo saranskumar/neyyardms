@@ -2,10 +2,19 @@
 
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
-import { toast } from "@/lib/utils";
 import { reportDamage as rpcReport } from "@/lib/rpc";
+import type { RpcResult } from "@/lib/utils";
+import { toast } from "@/lib/utils";
 
 type Product = { id: number; name: string };
+
+type DamagePayload = {
+  storehouseId: number;
+  productId: number;
+  qty: number;
+  reason: string;
+  type: string;
+};
 
 export default function DamageReportPage() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -15,48 +24,52 @@ export default function DamageReportPage() {
   const [reason, setReason] = useState<string>("");
   const [type, setType] = useState<string>("transport");
 
-  async function loadProducts() {
-    const { data, error } = await supabase.from("products").select("id, name");
-    if (error) {
-      console.error("Failed to load products:", error);
-      toast("Failed to load products");
-      setProducts([]);
-      return;
-    }
-    setProducts(data as Product[]);
-  }
-
   useEffect(() => {
+    let mounted = true;
+
+    const loadProducts = async () => {
+      const { data, error } = await supabase.from("products").select("id, name");
+      if (error) {
+        console.error("Failed to load products:", error);
+        toast("Failed to load products");
+        if (mounted) setProducts([]);
+        return;
+      }
+      if (mounted) setProducts(data as Product[]);
+    };
+
     loadProducts();
+    return () => {
+      mounted = false;
+    };
   }, []);
 
   async function submit() {
     if (!productId) return toast("Select a product");
     if (!qty || qty <= 0) return toast("Enter a valid quantity");
 
-    try {
-      const res = await rpcReport({
-        storehouseId,
-        productId,
-        qty,
-        reason,
-        type
-      });
-      if (res.error) {
-        toast(res.error.message ?? "Failed to report damage");
-        console.error(res.error);
-      } else {
-        toast("Damage reported");
-        // reset
-        setProductId("");
-        setQty(0);
-        setReason("");
-        setType("transport");
-      }
-    } catch (err) {
-      console.error("RPC error", err);
-      toast("Failed to report damage");
+    const payload: DamagePayload = {
+      storehouseId,
+      productId: Number(productId),
+      qty,
+      reason,
+      type
+    };
+
+    const res: RpcResult<any> = await rpcReport(payload);
+
+    if (!res.success) {
+      console.error(res.message);
+      return toast(res.message ?? "Failed to report damage");
     }
+
+    toast("Damage reported");
+
+    // Reset fields
+    setProductId("");
+    setQty(0);
+    setReason("");
+    setType("transport");
   }
 
   return (
@@ -77,7 +90,9 @@ export default function DamageReportPage() {
         <label className="block font-medium">Product</label>
         <select
           value={productId}
-          onChange={(e) => setProductId(e.target.value === "" ? "" : Number(e.target.value))}
+          onChange={(e) =>
+            setProductId(e.target.value === "" ? "" : Number(e.target.value))
+          }
           className="border p-2 rounded w-full"
         >
           <option value="">Select product</option>
@@ -98,7 +113,11 @@ export default function DamageReportPage() {
         />
 
         <label className="block font-medium">Type</label>
-        <select value={type} onChange={(e) => setType(e.target.value)} className="border p-2 rounded w-full">
+        <select
+          value={type}
+          onChange={(e) => setType(e.target.value)}
+          className="border p-2 rounded w-full"
+        >
           <option value="arrival">arrival</option>
           <option value="leakage">leakage</option>
           <option value="transport">transport</option>
@@ -113,11 +132,12 @@ export default function DamageReportPage() {
           rows={3}
         />
 
-        <div className="flex gap-2">
-          <button className="py-2 px-4 bg-violet-700 text-white rounded" onClick={submit}>
-            Report Damage
-          </button>
-        </div>
+        <button
+          className="py-2 px-4 bg-violet-700 text-white rounded"
+          onClick={submit}
+        >
+          Report Damage
+        </button>
       </section>
     </main>
   );

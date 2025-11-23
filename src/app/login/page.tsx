@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { supabase } from "@/lib/supabase";
-import { toast } from "@/lib/utils";
+import { toast } from "@/lib/utils/index";
 import { useRouter } from "next/navigation";
 
 export default function LoginPage() {

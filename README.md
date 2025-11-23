@@ -113,8 +113,15 @@ neyyar-app/
 │   │   ├── ui/               # Reusable UI primitives
 │   │   └── ToastContext.tsx  # Toast notification system
 │   ├── lib/
-│   │   ├── supaClient.ts     # Supabase client
-│   │   └── utils.ts          # Utility functions
+│   │   ├── supabase.ts       # Supabase client
+│   │   ├── rpc.ts            # RPC function wrappers
+│   │   ├── utils.ts          # cn() utility for Tailwind
+│   │   └── utils/            # Utility functions folder
+│   │       ├── index.ts      # Barrel export
+│   │       ├── formatters.ts # money(), date formatters
+│   │       ├── toast.ts      # Toast notifications
+│   │       ├── rpc.ts        # RPC type definitions
+│   │       └── rpc-helpers.ts # RPC result handlers
 │   └── providers/
 │       ├── QueryProvider.tsx # TanStack Query setup
 │       └── SupabaseProvider.tsx # Auth state management

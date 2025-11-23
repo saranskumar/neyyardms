@@ -85,7 +85,11 @@ export default function POSPage() {
     if (isOnline()) {
       try {
         const res = await makeSale(payload);
-        if (res.error) throw res.error;
+
+        if (!res.success) {
+          throw new Error(res.message || "Sale failed");
+        }
+
         toast("Sale completed");
         setCart([]);
       } catch (err) {
