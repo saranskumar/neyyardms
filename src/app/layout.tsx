@@ -2,9 +2,14 @@
 
 import { useEffect } from "react";
 import "./globals.css";
-import Header from "@/components/Header";
+import BottomNav from "@/components/BottomNav";
+import QueryProvider from "@/providers/QueryProvider";
+import { AuthProvider } from "@/lib/auth-context";
+import { usePathname } from "next/navigation";
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname();
+
   useEffect(() => {
     if ("serviceWorker" in navigator) {
       navigator.serviceWorker.register("/sw.js");
@@ -25,10 +30,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="manifest" href="/manifest.json" />
         <link rel="icon" href="/favicon.ico" />
       </head>
-      <body>
-       <Header />
-  {children}
-  </body>
+      <body className="pb-16">
+        <AuthProvider>
+          <QueryProvider>
+            {children}
+            <BottomNav />
+          </QueryProvider>
+        </AuthProvider>
+      </body>
     </html>
   );
 }
