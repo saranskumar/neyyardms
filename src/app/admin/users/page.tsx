@@ -1,15 +1,15 @@
 "use client";
 
 import { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
-import { Users, Plus, Edit, X, UserPlus } from "lucide-react";
-import { toast } from "@/lib/utils";
+import { Users, Plus, X, UserPlus, Phone } from "lucide-react";
 
 interface User {
     id: string;
     email: string;
     full_name: string;
+    phone_number: string | null;
     role: "admin" | "salesman";
     default_storehouse_id: number | null;
     created_at: string;
@@ -17,7 +17,6 @@ interface User {
 
 export default function UsersPage() {
     const [showModal, setShowModal] = useState(false);
-    const queryClient = useQueryClient();
 
     const { data: users, isLoading } = useQuery({
         queryKey: ["users"],
@@ -75,6 +74,7 @@ export default function UsersPage() {
                                 <tr className="border-b border-zinc-200">
                                     <th className="text-left py-3 px-4 text-sm font-medium text-zinc-600">Name</th>
                                     <th className="text-left py-3 px-4 text-sm font-medium text-zinc-600">Email</th>
+                                    <th className="text-left py-3 px-4 text-sm font-medium text-zinc-600">Phone</th>
                                     <th className="text-left py-3 px-4 text-sm font-medium text-zinc-600">Role</th>
                                     <th className="text-left py-3 px-4 text-sm font-medium text-zinc-600">Joined</th>
                                 </tr>
@@ -87,6 +87,16 @@ export default function UsersPage() {
                                         </td>
                                         <td className="py-3 px-4 text-sm text-zinc-600">
                                             {user.email}
+                                        </td>
+                                        <td className="py-3 px-4 text-sm text-zinc-600">
+                                            {user.phone_number ? (
+                                                <div className="flex items-center gap-1">
+                                                    <Phone size={14} className="text-zinc-400" />
+                                                    {user.phone_number}
+                                                </div>
+                                            ) : (
+                                                <span className="text-zinc-400">-</span>
+                                            )}
                                         </td>
                                         <td className="py-3 px-4">
                                             <span className={`inline-block px-2 py-1 rounded-full text-xs ${user.role === "admin"

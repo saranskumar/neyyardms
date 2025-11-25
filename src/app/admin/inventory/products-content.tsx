@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
-import { Package, Plus, Search, Edit, Trash2, X } from "lucide-react";
+import { Package, Plus, Search, Edit, X } from "lucide-react";
 import { toast } from "@/lib/utils";
 
 interface Product {
@@ -75,22 +75,7 @@ export default function ProductsContent() {
         }
     });
 
-    const deleteMutation = useMutation({
-        mutationFn: async (id: number) => {
-            const { error } = await supabase
-                .from("products")
-                .delete()
-                .eq("id", id);
-            if (error) throw error;
-        },
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["products"] });
-            toast("Product deleted successfully");
-        },
-        onError: (error: any) => {
-            toast(error.message || "Failed to delete product");
-        }
-    });
+
 
     const filteredProducts = products?.filter(p =>
         p.name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -148,16 +133,6 @@ export default function ProductsContent() {
                                             className="p-2 hover:bg-zinc-100 rounded-lg"
                                         >
                                             <Edit size={16} style={{ color: "#3E2758" }} />
-                                        </button>
-                                        <button
-                                            onClick={() => {
-                                                if (confirm("Delete this product?")) {
-                                                    deleteMutation.mutate(product.id);
-                                                }
-                                            }}
-                                            className="p-2 hover:bg-red-50 rounded-lg"
-                                        >
-                                            <Trash2 size={16} className="text-red-600" />
                                         </button>
                                     </div>
                                 </div>

@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Offline - Neyyar Dairy</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #3E2758 0%, #5a3d7a 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      padding: 20px;
+    }
+
+    .container {
+      text-align: center;
+      max-width: 500px;
+    }
+
+    .icon {
+      font-size: 80px;
+      margin-bottom: 20px;
+      opacity: 0.9;
+    }
+
+    h1 {
+      font-size: 32px;
+      margin-bottom: 16px;
+      color: #FACC15;
+    }
+
+    p {
+      font-size: 18px;
+      margin-bottom: 12px;
+      opacity: 0.9;
+      line-height: 1.6;
+    }
+
+    .status {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      padding: 16px;
+      margin-top: 24px;
+      backdrop-filter: blur(10px);
+    }
+
+    button {
+      background: #FACC15;
+      color: #3E2758;
+      border: none;
+      padding: 12px 32px;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 24px;
+      transition: transform 0.2s;
+    }
+
+    button:hover {
+      transform: scale(1.05);
+    }
+
+    button:active {
+      transform: scale(0.95);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="icon">📡</div>
+    <h1>You're Offline</h1>
+    <p>It looks like you've lost your internet connection.</p>
+    <p>Don't worry! Your data is safe and will sync automatically when you're back online.</p>
+    
+    <div class="status">
+      <p><strong>Status:</strong> <span id="status">Checking connection...</span></p>
+    </div>
+
+    <button onclick="location.reload()">Try Again</button>
+  </div>
+
+  <script>
+    // Check connection status
+    function updateStatus() {
+      const status = document.getElementById('status');
+      if (navigator.onLine) {
+        status.textContent = 'Back online! Refreshing...';
+        status.style.color = '#FACC15';
+        setTimeout(() => location.reload(), 1000);
+      } else {
+        status.textContent = 'Offline';
+        status.style.color = '#ff6b6b';
+      }
+    }
+
+    // Listen for online/offline events
+    window.addEventListener('online', updateStatus);
+    window.addEventListener('offline', updateStatus);
+
+    // Initial check
+    updateStatus();
+
+    // Periodic check
+    setInterval(updateStatus, 3000);
+  </script>
+</body>
+</html>

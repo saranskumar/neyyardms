@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
-import { MapPin, Plus, Edit, Trash2, X } from "lucide-react";
+import { MapPin, Plus, Edit, X } from "lucide-react";
 import { toast } from "@/lib/utils";
 
 interface Route {
@@ -72,22 +72,7 @@ export default function RoutesPage() {
         }
     });
 
-    const deleteMutation = useMutation({
-        mutationFn: async (id: number) => {
-            const { error } = await supabase
-                .from("routes")
-                .delete()
-                .eq("id", id);
-            if (error) throw error;
-        },
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["routes"] });
-            toast("Route deleted successfully");
-        },
-        onError: (error: any) => {
-            toast(error.message || "Failed to delete route");
-        }
-    });
+
 
     return (
         <div className="space-y-6">
@@ -131,27 +116,15 @@ export default function RoutesPage() {
                                             {route.is_active ? "Active" : "Inactive"}
                                         </span>
                                     </div>
-                                    <div className="flex gap-2">
-                                        <button
-                                            onClick={() => {
-                                                setEditingRoute(route);
-                                                setShowModal(true);
-                                            }}
-                                            className="p-2 hover:bg-zinc-100 rounded-lg"
-                                        >
-                                            <Edit size={16} style={{ color: "#3E2758" }} />
-                                        </button>
-                                        <button
-                                            onClick={() => {
-                                                if (confirm("Delete this route?")) {
-                                                    deleteMutation.mutate(route.id);
-                                                }
-                                            }}
-                                            className="p-2 hover:bg-red-50 rounded-lg"
-                                        >
-                                            <Trash2 size={16} className="text-red-600" />
-                                        </button>
-                                    </div>
+                                    <button
+                                        onClick={() => {
+                                            setEditingRoute(route);
+                                            setShowModal(true);
+                                        }}
+                                        className="p-2 hover:bg-zinc-100 rounded-lg"
+                                    >
+                                        <Edit size={16} style={{ color: "#3E2758" }} />
+                                    </button>
                                 </div>
                             </div>
                         ))}

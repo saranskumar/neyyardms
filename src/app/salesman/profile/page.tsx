@@ -77,6 +77,9 @@ export default function ProfilePage() {
                             {userDetails?.full_name || "User"}
                         </h2>
                         <p className="text-sm text-zinc-500">{user?.email}</p>
+                        {userDetails?.phone_number && (
+                            <p className="text-sm text-zinc-500 mt-1">📞 {userDetails.phone_number}</p>
+                        )}
                         <div className="flex items-center gap-2 mt-2">
                             <span className="px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-700">
                                 Salesman
