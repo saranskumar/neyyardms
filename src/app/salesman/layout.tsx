@@ -4,7 +4,7 @@ import { useAuth } from "@/lib/auth-context";
 import { useRouter, usePathname } from "next/navigation";
 import { useEffect, ReactNode, useState } from "react";
 import Link from "next/link";
-import { Home, MapPin, Store, Package, History, ChevronDown } from "lucide-react";
+import { Home, MapPin, Store, Package, Users, ChevronDown } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import Image from "next/image";
@@ -41,7 +41,7 @@ export default function SalesmanLayout({ children }: { children: ReactNode }) {
         { name: "Route", href: "/salesman/route", icon: MapPin },
         { name: "POS", href: "/salesman/pos", icon: Store },
         { name: "Stock", href: "/salesman/stocks", icon: Package },
-        { name: "History", href: "/salesman/history", icon: History },
+        { name: "Profile", href: "/salesman/profile", icon: Users },
     ];
 
     if (loading || !user || role !== "salesman") {

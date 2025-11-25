@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
-import { Store, Plus, Search, Edit, Trash2, X, GripVertical } from "lucide-react";
+import { Store, Plus, Search, Edit, Trash2, X, GripVertical, TrendingUp, Calendar, DollarSign, Eye } from "lucide-react";
 import { toast } from "@/lib/utils";
 
 interface Shop {
@@ -24,7 +24,9 @@ interface Route {
 
 export default function ShopsPage() {
     const [showModal, setShowModal] = useState(false);
+    const [showDetail, setShowDetail] = useState(false);
     const [editingShop, setEditingShop] = useState<Shop | null>(null);
+    const [selectedShop, setSelectedShop] = useState<Shop | null>(null);
     const [searchQuery, setSearchQuery] = useState("");
     const queryClient = useQueryClient();
 
@@ -127,7 +129,7 @@ export default function ShopsPage() {
                         setEditingShop(null);
                         setShowModal(true);
                     }}
-                    className="flex items-center gap-2 px-4 py-2 rounded-lg text-white font-medium hover:opacity-90 transition-opacity"
+                    className="flex items-center gap-2 px-4 py-2 rounded-lg text-white font-medium hover:opacity-90"
                     style={{ backgroundColor: "#3E2758" }}
                 >
                     <Plus size={20} />
@@ -156,7 +158,11 @@ export default function ShopsPage() {
                         {filteredShops.map((shop) => (
                             <div
                                 key={shop.id}
-                                className="flex items-center gap-4 p-4 border border-zinc-200 rounded-xl hover:shadow-md transition-shadow"
+                                className="flex items-center gap-4 p-4 border border-zinc-200 rounded-xl hover:shadow-md transition-shadow cursor-pointer"
+                                onClick={() => {
+                                    setSelectedShop(shop);
+                                    setShowDetail(true);
+                                }}
                             >
                                 <GripVertical className="text-zinc-400 cursor-move" size={20} />
                                 <div className="flex-1">
@@ -179,13 +185,23 @@ export default function ShopsPage() {
                                         )}
                                     </div>
                                 </div>
-                                <div className="flex gap-2">
+                                <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
+                                    <button
+                                        onClick={() => {
+                                            setSelectedShop(shop);
+                                            setShowDetail(true);
+                                        }}
+                                        className="p-2 hover:bg-blue-50 rounded-lg"
+                                        title="View Details"
+                                    >
+                                        <Eye size={16} className="text-blue-600" />
+                                    </button>
                                     <button
                                         onClick={() => {
                                             setEditingShop(shop);
                                             setShowModal(true);
                                         }}
-                                        className="p-2 hover:bg-zinc-100 rounded-lg transition-colors"
+                                        className="p-2 hover:bg-zinc-100 rounded-lg"
                                     >
                                         <Edit size={16} style={{ color: "#3E2758" }} />
                                     </button>
@@ -195,7 +211,7 @@ export default function ShopsPage() {
                                                 deleteMutation.mutate(shop.id);
                                             }
                                         }}
-                                        className="p-2 hover:bg-red-50 rounded-lg transition-colors"
+                                        className="p-2 hover:bg-red-50 rounded-lg"
                                     >
                                         <Trash2 size={16} className="text-red-600" />
                                     </button>
@@ -207,7 +223,6 @@ export default function ShopsPage() {
                     <div className="text-center py-12">
                         <Store className="mx-auto mb-4 text-zinc-300" size={48} />
                         <p className="text-zinc-500">No shops found</p>
-                        <p className="text-sm text-zinc-400 mt-1">Click "Add Shop" to get started</p>
                     </div>
                 )}
             </div>
@@ -229,6 +244,163 @@ export default function ShopsPage() {
                     }}
                 />
             )}
+
+            {showDetail && selectedShop && (
+                <ShopDetailModal
+                    shop={selectedShop}
+                    routes={routes || []}
+                    onClose={() => {
+                        setShowDetail(false);
+                        setSelectedShop(null);
+                    }}
+                    onBalanceUpdate={(newBalance) => {
+                        updateMutation.mutate({
+                            id: selectedShop.id,
+                            current_balance: newBalance
+                        });
+                        setSelectedShop({ ...selectedShop, current_balance: newBalance });
+                    }}
+                />
+            )}
+        </div>
+    );
+}
+
+function ShopDetailModal({
+    shop,
+    routes,
+    onClose,
+    onBalanceUpdate
+}: {
+    shop: Shop;
+    routes: Route[];
+    onClose: () => void;
+    onBalanceUpdate: (balance: number) => void;
+}) {
+    const [editingBalance, setEditingBalance] = useState(false);
+    const [newBalance, setNewBalance] = useState(shop.current_balance);
+
+    const { data: recentSales } = useQuery({
+        queryKey: ["shop_sales", shop.id],
+        queryFn: async () => {
+            const { data, error } = await supabase
+                .from("sales")
+                .select("*")
+                .eq("shop_id", shop.id)
+                .order("created_at", { ascending: false })
+                .limit(10);
+            if (error) throw error;
+            return data;
+        }
+    });
+
+    const route = routes.find(r => r.id === shop.route_id);
+
+    return (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-2xl max-w-2xl w-full p-6 max-h-[90vh] overflow-y-auto">
+                <div className="flex items-center justify-between mb-6">
+                    <div>
+                        <h2 className="text-2xl font-bold" style={{ color: "#3E2758" }}>{shop.name}</h2>
+                        <p className="text-sm text-zinc-500">Shop ID: {shop.id}</p>
+                    </div>
+                    <button onClick={onClose} className="p-2 hover:bg-zinc-100 rounded-lg">
+                        <X size={20} />
+                    </button>
+                </div>
+
+                {/* Shop Info */}
+                <div className="bg-zinc-50 rounded-xl p-4 mb-6">
+                    <h3 className="font-bold mb-3" style={{ color: "#3E2758" }}>Shop Information</h3>
+                    <div className="grid grid-cols-2 gap-4">
+                        <div>
+                            <p className="text-sm text-zinc-500">Route</p>
+                            <p className="font-medium">{route?.name || "Not assigned"}</p>
+                        </div>
+                        <div>
+                            <p className="text-sm text-zinc-500">Route Order</p>
+                            <p className="font-medium">{shop.route_order || "-"}</p>
+                        </div>
+                        <div>
+                            <p className="text-sm text-zinc-500">Status</p>
+                            <span className={`inline-block px-2 py-1 rounded-full text-xs ${shop.is_active ? "bg-green-100 text-green-700" : "bg-zinc-100 text-zinc-600"
+                                }`}>
+                                {shop.is_active ? "Active" : "Inactive"}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Outstanding Balance */}
+                <div className="bg-zinc-50 rounded-xl p-4 mb-6">
+                    <div className="flex items-center justify-between mb-3">
+                        <h3 className="font-bold" style={{ color: "#3E2758" }}>Outstanding Balance</h3>
+                        <button
+                            onClick={() => setEditingBalance(!editingBalance)}
+                            className="text-sm px-3 py-1 rounded-lg hover:bg-zinc-200"
+                        >
+                            {editingBalance ? "Cancel" : "Edit"}
+                        </button>
+                    </div>
+                    {editingBalance ? (
+                        <div className="flex gap-2">
+                            <input
+                                type="number"
+                                step="0.01"
+                                value={newBalance}
+                                onChange={(e) => setNewBalance(parseFloat(e.target.value) || 0)}
+                                className="flex-1 border border-zinc-300 rounded-lg px-3 py-2 outline-none focus:border-violet-500"
+                            />
+                            <button
+                                onClick={() => {
+                                    onBalanceUpdate(newBalance);
+                                    setEditingBalance(false);
+                                }}
+                                className="px-4 py-2 rounded-lg text-white font-medium"
+                                style={{ backgroundColor: "#3E2758" }}
+                            >
+                                Save
+                            </button>
+                        </div>
+                    ) : (
+                        <p className={`text-3xl font-bold ${shop.current_balance > 0 ? 'text-red-600' : 'text-green-600'}`}>
+                            ₹{shop.current_balance.toLocaleString()}
+                        </p>
+                    )}
+                    <p className="text-xs text-zinc-500 mt-2">
+                        {shop.current_balance > 0 ? "Shop owes money" : shop.current_balance < 0 ? "Credit balance" : "Balanced"}
+                    </p>
+                </div>
+
+                {/* Recent Sales */}
+                <div>
+                    <h3 className="font-bold mb-3" style={{ color: "#3E2758" }}>Recent Sales</h3>
+                    {recentSales && recentSales.length > 0 ? (
+                        <div className="space-y-2">
+                            {recentSales.map((sale: any) => (
+                                <div key={sale.id} className="flex items-center justify-between p-3 bg-zinc-50 rounded-lg">
+                                    <div>
+                                        <p className="text-sm font-medium" style={{ color: "#3E2758" }}>
+                                            Sale #{sale.id}
+                                        </p>
+                                        <p className="text-xs text-zinc-500">
+                                            {new Date(sale.created_at).toLocaleString()}
+                                        </p>
+                                    </div>
+                                    <div className="text-right">
+                                        <p className="font-bold" style={{ color: "#3E2758" }}>₹{sale.total_revenue.toFixed(2)}</p>
+                                        <p className="text-xs text-zinc-500">
+                                            Cash: ₹{sale.cash_collected.toFixed(2)} | Credit: ₹{sale.outstanding_added.toFixed(2)}
+                                        </p>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    ) : (
+                        <p className="text-zinc-500 text-sm text-center py-8">No sales history</p>
+                    )}
+                </div>
+            </div>
         </div>
     );
 }
